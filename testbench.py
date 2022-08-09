@@ -17,7 +17,7 @@ import nrrd
 import matplotlib.pyplot as plt
 
 # Some sample numpy data
-filename = 'segmentation-1.nrrd'
+filename = 'segmentation-4.nrrd'
 
 # Read the data back from file
 readdata, header = nrrd.read(filename)
@@ -29,5 +29,5 @@ while(1):
         plt.imshow(readdata[:,:,i])
         plt.title(str(i))
         plt.show()
-        plt.pause(0.001)
+        plt.pause(0.002)
         plt.clf()
