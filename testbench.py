@@ -1,4 +1,4 @@
-# import pydicom
+import pydicom
 # import pydicom_seg
 # import SimpleITK as sitk
 
@@ -21,11 +21,19 @@ filename = 'segmentation-4.nrrd'
 
 # Read the data back from file
 readdata, header = nrrd.read(filename)
-
+dcm = pydicom.dcmread('1-1.dcm')
 plt.ion()
 
 while(1):
-    for i in range(readdata.shape[2]):
+    for i in range(9):
+        dcm = pydicom.dcmread("1-0"+str(i+1)+".dcm")
+        plt.imshow(readdata[:,:,i])
+        plt.title(str(i))
+        plt.show()
+        plt.pause(0.002)
+        plt.clf()
+    for i in range(9,19):
+        dcm = pydicom.dcmread("1-"+str(i+1)+".dcm")
         plt.imshow(readdata[:,:,i])
         plt.title(str(i))
         plt.show()
