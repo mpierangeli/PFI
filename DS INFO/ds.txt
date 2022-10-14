@@ -18,3 +18,11 @@ ds_prostatex_segmentation
     
     Feature = Secuencias Axial (mismas personas q antes pero recortadas)
 
+ds_mezcla_segmentacion
+    https://liuquande.github.io/SAML/
+
+    - 117 total de 6 ds distintos normalizados, 3 son del Promise 12 (challenge)
+
+    Target = segmentación íntegra de prostata (rotada)
+
+    Feature = Secuencias axiales recortadas 
