@@ -1,0 +1,5 @@
+- Con y Sin dropout
+- Cambiar Relu por Selu
+- Attention Unet
+- Res Unet
+- Con y Sin Data aug en validacion??
