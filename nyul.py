@@ -105,10 +105,10 @@ def nyul_train_standard_scale(img_fns,
     # process each image in order to build the standard scale
     for i, (img_fn, mask_fn) in enumerate(zip(img_fns, mask_fns)):
         print('processing scan ', img_fn)
-        img_data = nib.load(img_fn).get_data()  # extract image as numpy array
+        img_data = nib.load(img_fn).get_fdata()  # extract image as numpy array
         mask = nib.load(mask_fn) if mask_fn is not None else None  # load mask as nibabel object
         mask_data = img_data > img_data.mean() \
-            if mask is None else mask.get_data()  # extract mask as numpy array
+            if mask is None else mask.get_fdata()  # extract mask as numpy array
         masked = img_data[mask_data > 0]  # extract only part of image where mask is non-emtpy
         landmarks = get_landmarks(masked, percs)
         min_p = np.percentile(masked, i_min)

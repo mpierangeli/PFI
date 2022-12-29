@@ -24,6 +24,14 @@ def deconv_block(inputs, activation="relu", initializer="he_normal", num_filters
     
     return conv
 
+def res_deconv_block(inputs, activation="relu", initializer="he_normal", num_filters=64,concat=None):
+    
+    up = Conv2DTranspose(num_filters, (2, 2), strides=(2, 2), padding='same')(inputs)
+    merge = concatenate([up,concat], axis = 3)
+    conv = res_conv_block(merge, activation=activation, initializer=initializer, num_filters=num_filters)
+    
+    return conv
+
 def attention_block(x, gating, num_filters):
     shape_x = K.int_shape(x)
     shape_g = K.int_shape(gating)
@@ -64,6 +72,23 @@ def repeat_elem(tensor, rep):
 
     return Lambda(lambda x, repnum: K.repeat_elements(x, repnum, axis=3), arguments={'repnum': rep})(tensor)
 
+def res_conv_block(x, num_filters=64,initializer="he_normal", activation="relu"):
+
+    conv = Conv2D(num_filters, (3,3), padding='same', kernel_initializer = initializer)(x)
+    conv = BatchNormalization()(conv)
+    conv = Activation(activation)(conv)
+    conv = Conv2D(num_filters, (3,3), padding='same',kernel_initializer = initializer)(conv)
+    conv = BatchNormalization()(conv)
+    #conv = layers.Activation('relu')(conv)    #Activation before addition with shortcut
+    #conv = Dropout(dropout)(conv)
+
+    shortcut = Conv2D(num_filters, (1, 1), padding='same')(x)
+    shortcut = BatchNormalization()(shortcut)
+
+    res_path = add([shortcut, conv])
+    res_path = Activation(activation)(res_path)    #Activation after addition with shortcut (Original residual block)
+    
+    return res_path
 
 ### modelos
 
@@ -105,7 +130,6 @@ def AttUnet(input_size = (256,256,1), activation = "relu", initializer = "he_nor
     inputs = Input(input_size)
 
     # Encoder
-    # Encoder
     conv1 = conv_block(inputs,num_filters=num_filters,activation=activation,initializer=initializer)
     pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
     conv2 = conv_block(pool1,num_filters=num_filters*2,activation=activation,initializer=initializer)
@@ -131,6 +155,45 @@ def AttUnet(input_size = (256,256,1), activation = "relu", initializer = "he_nor
     gating4 = gating_signal(deconv3, num_filters=num_filters)
     att4 = attention_block(conv1, gating4, num_filters=num_filters)
     deconv4 = deconv_block(deconv3,num_filters=num_filters,activation=activation,initializer=initializer,concat=att4)
+    
+    output = Conv2D(1,1)(deconv4)
+    #output = BatchNormalization()(output)
+    output = Activation('sigmoid')(output)
+
+    model  = Model(inputs, output, name = "AttU-Net")
+    
+    return model
+
+def ResAttUnet(input_size = (256,256,1), activation = "relu", initializer = "he_normal",num_filters=64):
+    
+    inputs = Input(input_size)
+
+    # Encoder
+    conv1 = res_conv_block(inputs,num_filters=num_filters,activation=activation,initializer=initializer)
+    pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
+    conv2 = res_conv_block(pool1,num_filters=num_filters*2,activation=activation,initializer=initializer)
+    pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)
+    conv3 = res_conv_block(pool2,num_filters=num_filters*4,activation=activation,initializer=initializer)
+    pool3 = MaxPooling2D(pool_size=(2, 2))(conv3)
+    conv4 = res_conv_block(pool3,num_filters=num_filters*8,activation=activation,initializer=initializer)
+    pool4 = MaxPooling2D(pool_size=(2, 2))(conv4)
+
+    # Bottleneck
+    conv5 = res_conv_block(pool4, num_filters=num_filters*16, activation=activation, initializer=initializer)
+ 
+    # Decoder
+    gating1 = gating_signal(conv5, num_filters=num_filters*8)
+    att1 = attention_block(conv4, gating1, num_filters=num_filters*8)
+    deconv1 = res_deconv_block(conv5,num_filters=num_filters*8,activation=activation,initializer=initializer,concat=att1)
+    gating2 = gating_signal(deconv1, num_filters=num_filters*4)
+    att2 = attention_block(conv3, gating2, num_filters=num_filters*4)
+    deconv2 = res_deconv_block(deconv1,num_filters=num_filters*4,activation=activation,initializer=initializer,concat=att2)
+    gating3 = gating_signal(deconv2,num_filters=num_filters*2)
+    att3 = attention_block(conv2, gating3,num_filters=num_filters*2)
+    deconv3 = res_deconv_block(deconv2,num_filters=num_filters*2,activation=activation,initializer=initializer,concat=att3)
+    gating4 = gating_signal(deconv3, num_filters=num_filters)
+    att4 = attention_block(conv1, gating4, num_filters=num_filters)
+    deconv4 = res_deconv_block(deconv3,num_filters=num_filters,activation=activation,initializer=initializer,concat=att4)
     
     output = Conv2D(1,1)(deconv4)
     #output = BatchNormalization()(output)
