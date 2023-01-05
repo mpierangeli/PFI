@@ -5,7 +5,7 @@ from keras import backend as K
 
 ### bloques
 
-def conv_block(inputs, activation="relu", initializer="he_normal", num_filters=64):
+def conv_block(inputs, activation="relu", initializer="he_normal", num_filters=64, dropout=False):
     
     conv = Conv2D(num_filters, 3, padding = 'same', kernel_initializer = initializer)(inputs)
     conv = BatchNormalization()(conv)
@@ -13,6 +13,8 @@ def conv_block(inputs, activation="relu", initializer="he_normal", num_filters=6
     conv = Conv2D(num_filters, 3, padding = 'same', kernel_initializer = initializer)(conv)
     conv = BatchNormalization()(conv)
     conv = Activation(activation)(conv)
+    if dropout:
+        conv = Dropout(dropout)(conv)
     
     return conv
 
@@ -92,19 +94,19 @@ def res_conv_block(x, num_filters=64,initializer="he_normal", activation="relu")
 
 ### modelos
 
-def UNet(input_size = (256,256,1), activation = "relu", initializer = "he_normal",num_filters=64):
+def UNet(input_size = (256,256,1), activation = "relu", initializer = "he_normal",num_filters=64, dropout=False):
     
     # Input
     inputs = Input(input_size)
     
     # Encoder
-    conv1 = conv_block(inputs,num_filters=num_filters,activation=activation,initializer=initializer)
+    conv1 = conv_block(inputs,num_filters=num_filters,activation=activation,initializer=initializer,dropout=dropout)
     pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
-    conv2 = conv_block(pool1,num_filters=num_filters*2,activation=activation,initializer=initializer)
+    conv2 = conv_block(pool1,num_filters=num_filters*2,activation=activation,initializer=initializer,dropout=dropout)
     pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)
-    conv3 = conv_block(pool2,num_filters=num_filters*4,activation=activation,initializer=initializer)
+    conv3 = conv_block(pool2,num_filters=num_filters*4,activation=activation,initializer=initializer,dropout=dropout)
     pool3 = MaxPooling2D(pool_size=(2, 2))(conv3)
-    conv4 = conv_block(pool3,num_filters=num_filters*8,activation=activation,initializer=initializer)
+    conv4 = conv_block(pool3,num_filters=num_filters*8,activation=activation,initializer=initializer,dropout=dropout)
     pool4 = MaxPooling2D(pool_size=(2, 2))(conv4)
 
     # Bottleneck
@@ -125,18 +127,18 @@ def UNet(input_size = (256,256,1), activation = "relu", initializer = "he_normal
 
     return model
 
-def AttUnet(input_size = (256,256,1), activation = "relu", initializer = "he_normal",num_filters=64):
+def AttUnet(input_size = (256,256,1), activation = "relu", initializer = "he_normal",num_filters=64, dropout=False):
     
     inputs = Input(input_size)
 
     # Encoder
-    conv1 = conv_block(inputs,num_filters=num_filters,activation=activation,initializer=initializer)
+    conv1 = conv_block(inputs,num_filters=num_filters,activation=activation,initializer=initializer,dropout=dropout)
     pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
-    conv2 = conv_block(pool1,num_filters=num_filters*2,activation=activation,initializer=initializer)
+    conv2 = conv_block(pool1,num_filters=num_filters*2,activation=activation,initializer=initializer,dropout=dropout)
     pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)
-    conv3 = conv_block(pool2,num_filters=num_filters*4,activation=activation,initializer=initializer)
+    conv3 = conv_block(pool2,num_filters=num_filters*4,activation=activation,initializer=initializer,dropout=dropout)
     pool3 = MaxPooling2D(pool_size=(2, 2))(conv3)
-    conv4 = conv_block(pool3,num_filters=num_filters*8,activation=activation,initializer=initializer)
+    conv4 = conv_block(pool3,num_filters=num_filters*8,activation=activation,initializer=initializer,dropout=dropout)
     pool4 = MaxPooling2D(pool_size=(2, 2))(conv4)
 
     # Bottleneck
@@ -157,7 +159,7 @@ def AttUnet(input_size = (256,256,1), activation = "relu", initializer = "he_nor
     deconv4 = deconv_block(deconv3,num_filters=num_filters,activation=activation,initializer=initializer,concat=att4)
     
     output = Conv2D(1,1)(deconv4)
-    #output = BatchNormalization()(output)
+    output = BatchNormalization()(output)
     output = Activation('sigmoid')(output)
 
     model  = Model(inputs, output, name = "AttU-Net")
