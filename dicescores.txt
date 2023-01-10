@@ -1,0 +1,8 @@
+classic unet selu -> 0.822
+unet selu -> 0.809
+unet relu -> 0.818
+unet small relu -> 0.845
+unet very small selu -> 0.818
+attunet selu -> 0.835
+restattunet selu -> 0.802
+unet3+ relu -> 0.808
