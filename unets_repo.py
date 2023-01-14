@@ -216,7 +216,7 @@ def AttUnet(input_size = (256,256,1), activation = "relu", initializer = "he_nor
     
     return model
 
-def ResAttUnet(input_size = (256,256,1), activation = "relu", initializer = "he_normal",num_filters=64):
+def ResAttUnet(input_size = (256,256,1), activation = "relu", initializer = "he_normal",num_filters=64,bn=False):
     
     inputs = Input(input_size)
 
@@ -248,7 +248,8 @@ def ResAttUnet(input_size = (256,256,1), activation = "relu", initializer = "he_
     deconv4 = res_deconv_block(deconv3,num_filters=num_filters,activation=activation,initializer=initializer,concat=att4)
     
     output = Conv2D(1,1)(deconv4)
-    #output = BatchNormalization()(output) #mepa q la entrene sin esto
+    if bn:
+        output = BatchNormalization()(output) #mepa q la entrene sin esto
     output = Activation('sigmoid')(output)
 
     model  = Model(inputs, output, name = "AttU-Net")
