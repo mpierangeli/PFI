@@ -1,9 +1,11 @@
-classic unet selu -> 0.822
-unet selu -> 0.809
-unet relu -> 0.818
-unet small relu -> 0.845
-unet very small selu -> 0.818
-attunet selu -> 0.835
-attunet relu -> 0.828
-restattunet selu -> 0.836
-unet3+ relu -> 0.808
+scores with best th
+'AttUnet w/s': 0.8457712689022799, 0.95, 95
+ 'Unet3+': 0.8096403354332508, 0.45, 123
+ 'vsUnet': 0.8219231193939818, 0.70, 52
+ 'sUnet': 0.847660539761372, 0.65, 131
+ 'Unet': 0.8344075993106885, 0.85, 64 
+ 'Unet w/s': 0.8187515987000323, 0.95, 76
+ 'ResAttUnet': 0.8167614118234443, 0.95, 66
+ 'ClassicUnet': 0.830141253332298, 0.95, 89
+ 'AttUnet': 0.8414765797701355,  0.75, 112
+ 
